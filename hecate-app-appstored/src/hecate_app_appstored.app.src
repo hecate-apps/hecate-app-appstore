@@ -1,0 +1,27 @@
+{application, hecate_app_appstored, [
+    {description, "Hecate Marketplace - Plugin Discovery and Licensing Daemon"},
+    {vsn, "0.1.0"},
+    {registered, [hecate_app_appstored_sup]},
+    {mod, {hecate_app_appstored_app, []}},
+    {applications, [
+        kernel,
+        stdlib,
+        crypto,
+        ssl,
+        inets,
+        cowboy,
+        reckon_db,
+        evoq,
+        reckon_evoq,
+        esqlite
+    ]},
+    {env, [
+        {data_dir, "~/.hecate/hecate-app-appstored"},
+        {api_socket_name, "api.sock"}
+    ]},
+    {modules, []},
+    {licenses, ["Apache-2.0"]},
+    {links, [
+        {"GitHub", "https://github.com/hecate-social/hecate-app-appstore"}
+    ]}
+]}.
