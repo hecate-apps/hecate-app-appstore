@@ -8,28 +8,32 @@
 -export([init/2, routes/0]).
 
 -define(CATALOG_COLUMNS, [
-    plugin_id, license_id, name, description, icon, github_repo,
-    oci_image, selling_formula, seller_id, announced_at,
-    published_at, status, status_label
+    plugin_id, license_id, name, org, version, description, icon,
+    github_repo, oci_image, manifest_tag, tags, homepage,
+    min_daemon_version, publisher_identity, selling_formula, seller_id,
+    announced_at, published_at, cataloged_at, refreshed_at,
+    status, status_label, retracted
 ]).
 
 -define(LICENSE_COLUMNS, [
     license_id, user_id, plugin_id, plugin_name,
-    oci_image, granted_at, revoked_at, archived_at,
-    status, status_label
+    installed, installed_version, oci_image,
+    granted_at, installed_at, upgraded_at, revoked, revoked_at
 ]).
 
 -define(CATALOG_SQL,
-    "SELECT plugin_id, license_id, name, description, icon, github_repo, "
-    "oci_image, selling_formula, seller_id, announced_at, "
-    "published_at, status, status_label "
+    "SELECT plugin_id, license_id, name, org, version, description, icon, "
+    "github_repo, oci_image, manifest_tag, tags, homepage, "
+    "min_daemon_version, publisher_identity, selling_formula, seller_id, "
+    "announced_at, published_at, cataloged_at, refreshed_at, "
+    "status, status_label, retracted "
     "FROM plugin_catalog WHERE plugin_id = ?1").
 
 -define(LICENSE_SQL,
     "SELECT license_id, user_id, plugin_id, plugin_name, "
-    "oci_image, granted_at, revoked_at, archived_at, "
-    "status, status_label "
-    "FROM licenses WHERE plugin_id = ?1 AND user_id = ?2 AND (status & 16) = 0").
+    "installed, installed_version, oci_image, "
+    "granted_at, installed_at, upgraded_at, revoked, revoked_at "
+    "FROM licenses WHERE plugin_id = ?1 AND user_id = ?2 AND (status & 32) = 0").
 
 routes() -> [{"/api/appstore/plugin/:id", ?MODULE, []}].
 

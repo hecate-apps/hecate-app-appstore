@@ -10,8 +10,8 @@
     license_id  :: binary(),
     user_id     :: binary(),
     plugin_id   :: binary(),
-    plugin_name :: binary(),
-    oci_image   :: binary()
+    plugin_name :: binary() | undefined,
+    oci_image   :: binary() | undefined
 }).
 
 -export_type([buy_license_v1/0]).

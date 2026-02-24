@@ -49,7 +49,14 @@ create_license(Params, Req) ->
         icon => app_appstored_api_utils:get_field(icon, Params, undefined),
         github_repo => app_appstored_api_utils:get_field(github_repo, Params, undefined),
         oci_image => app_appstored_api_utils:get_field(oci_image, Params, undefined),
-        selling_formula => app_appstored_api_utils:get_field(selling_formula, Params, undefined)
+        selling_formula => app_appstored_api_utils:get_field(selling_formula, Params, undefined),
+        org => app_appstored_api_utils:get_field(org, Params, undefined),
+        version => app_appstored_api_utils:get_field(version, Params, undefined),
+        manifest_tag => app_appstored_api_utils:get_field(manifest_tag, Params, undefined),
+        tags => app_appstored_api_utils:get_field(tags, Params, undefined),
+        homepage => app_appstored_api_utils:get_field(homepage, Params, undefined),
+        min_daemon_version => app_appstored_api_utils:get_field(min_daemon_version, Params, undefined),
+        publisher_identity => app_appstored_api_utils:get_field(publisher_identity, Params, undefined)
     },
     case initiate_license_v1:new(CmdParams) of
         {ok, Cmd} -> dispatch(Cmd, Req);
@@ -69,6 +76,13 @@ dispatch(Cmd, Req) ->
                 github_repo => initiate_license_v1:get_github_repo(Cmd),
                 oci_image => initiate_license_v1:get_oci_image(Cmd),
                 selling_formula => initiate_license_v1:get_selling_formula(Cmd),
+                org => initiate_license_v1:get_org(Cmd),
+                plugin_version => initiate_license_v1:get_version(Cmd),
+                manifest_tag => initiate_license_v1:get_manifest_tag(Cmd),
+                tags => initiate_license_v1:get_tags(Cmd),
+                homepage => initiate_license_v1:get_homepage(Cmd),
+                min_daemon_version => initiate_license_v1:get_min_daemon_version(Cmd),
+                publisher_identity => initiate_license_v1:get_publisher_identity(Cmd),
                 version => Version,
                 events => EventMaps
             }, Req);

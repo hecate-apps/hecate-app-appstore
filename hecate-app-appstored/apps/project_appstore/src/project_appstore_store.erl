@@ -22,6 +22,7 @@ init([]) ->
     ok = esqlite3:exec(Db, "PRAGMA journal_mode=WAL;"),
     ok = esqlite3:exec(Db, "PRAGMA synchronous=NORMAL;"),
     ok = create_tables(Db),
+    ok = run_migrations(Db),
     {ok, #state{db = Db}}.
 
 -spec execute(iodata()) -> ok | {error, term()}.
@@ -104,10 +105,20 @@ create_tables(Db) ->
             oci_image          TEXT,
             selling_formula    TEXT,
             seller_id          TEXT,
+            org                TEXT,
+            version            TEXT,
+            manifest_tag       TEXT,
+            tags               TEXT,
+            homepage           TEXT,
+            min_daemon_version TEXT,
+            publisher_identity TEXT,
             announced_at       INTEGER,
             published_at       INTEGER,
+            cataloged_at       INTEGER,
+            refreshed_at       INTEGER,
             status             INTEGER NOT NULL DEFAULT 0,
-            status_label       TEXT DEFAULT ''
+            status_label       TEXT DEFAULT '',
+            retracted          INTEGER NOT NULL DEFAULT 0
         );",
         "CREATE INDEX IF NOT EXISTS idx_catalog_seller ON plugin_catalog(seller_id);",
         "CREATE INDEX IF NOT EXISTS idx_catalog_license ON plugin_catalog(license_id);",
@@ -121,6 +132,11 @@ create_tables(Db) ->
             granted_at         INTEGER NOT NULL,
             revoked_at         INTEGER,
             archived_at        INTEGER,
+            installed          INTEGER NOT NULL DEFAULT 0,
+            installed_version  TEXT,
+            installed_at       INTEGER,
+            upgraded_at        INTEGER,
+            revoked            INTEGER NOT NULL DEFAULT 0,
             status             INTEGER DEFAULT 0,
             status_label       TEXT DEFAULT '',
             UNIQUE(user_id, plugin_id)
@@ -130,3 +146,33 @@ create_tables(Db) ->
     ],
     lists:foreach(fun(Sql) -> ok = esqlite3:exec(Db, Sql) end, Stmts),
     ok.
+
+run_migrations(Db) ->
+    %% Idempotent ALTER TABLE migrations for existing databases.
+    %% Each ALTER is wrapped in try/catch to silently skip if column exists.
+    CatalogAlters = [
+        "ALTER TABLE plugin_catalog ADD COLUMN org TEXT",
+        "ALTER TABLE plugin_catalog ADD COLUMN version TEXT",
+        "ALTER TABLE plugin_catalog ADD COLUMN manifest_tag TEXT",
+        "ALTER TABLE plugin_catalog ADD COLUMN tags TEXT",
+        "ALTER TABLE plugin_catalog ADD COLUMN homepage TEXT",
+        "ALTER TABLE plugin_catalog ADD COLUMN min_daemon_version TEXT",
+        "ALTER TABLE plugin_catalog ADD COLUMN publisher_identity TEXT",
+        "ALTER TABLE plugin_catalog ADD COLUMN cataloged_at INTEGER",
+        "ALTER TABLE plugin_catalog ADD COLUMN refreshed_at INTEGER",
+        "ALTER TABLE plugin_catalog ADD COLUMN retracted INTEGER NOT NULL DEFAULT 0"
+    ],
+    LicenseAlters = [
+        "ALTER TABLE licenses ADD COLUMN installed INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE licenses ADD COLUMN installed_version TEXT",
+        "ALTER TABLE licenses ADD COLUMN installed_at INTEGER",
+        "ALTER TABLE licenses ADD COLUMN upgraded_at INTEGER",
+        "ALTER TABLE licenses ADD COLUMN revoked INTEGER NOT NULL DEFAULT 0"
+    ],
+    lists:foreach(fun(Sql) -> try_alter(Db, Sql) end, CatalogAlters ++ LicenseAlters),
+    ok.
+
+try_alter(Db, Sql) ->
+    try esqlite3:exec(Db, Sql)
+    catch _:_ -> ok
+    end.

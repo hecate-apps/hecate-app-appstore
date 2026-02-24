@@ -31,7 +31,14 @@ make_initiate_payload() ->
         <<"github_repo">> => <<"hecate-social/hecate-trader">>,
         <<"oci_image">> => <<"ghcr.io/hecate-social/hecate-traderd:0.1.0">>,
         <<"selling_formula">> => <<"free">>,
-        <<"seller_id">> => ?SELLER_ID
+        <<"seller_id">> => ?SELLER_ID,
+        <<"org">> => <<"hecate-social">>,
+        <<"version">> => <<"0.1.0">>,
+        <<"manifest_tag">> => <<"v0.1.0">>,
+        <<"tags">> => <<"[\"trading\",\"bot\"]">>,
+        <<"homepage">> => <<"https://hecate.social/plugins/trader">>,
+        <<"min_daemon_version">> => <<"0.8.0">>,
+        <<"publisher_identity">> => <<"did:key:z6Mk...">>
     }.
 
 make_announce_payload() ->
@@ -220,3 +227,25 @@ full_lifecycle_flags_test() ->
     {ok, S4, _} = execute_and_apply(S3, make_buy_payload()),
     ?assertEqual(?LIC_INITIATED bor ?LIC_ANNOUNCED bor ?LIC_PUBLISHED bor ?LIC_LICENSED,
                  S4#license_state.status).
+
+%% ── New Metadata Tests ───────────────────────────────────────────────────────
+
+initiate_sets_new_metadata_test() ->
+    {ok, S, _Events} = execute_and_apply(fresh_state(), make_initiate_payload()),
+    ?assertEqual(<<"hecate-social">>, S#license_state.org),
+    ?assertEqual(<<"0.1.0">>, S#license_state.version),
+    ?assertEqual(<<"v0.1.0">>, S#license_state.manifest_tag),
+    ?assertEqual(<<"[\"trading\",\"bot\"]">>, S#license_state.tags),
+    ?assertEqual(<<"https://hecate.social/plugins/trader">>, S#license_state.homepage),
+    ?assertEqual(<<"0.8.0">>, S#license_state.min_daemon_version),
+    ?assertEqual(<<"did:key:z6Mk...">>, S#license_state.publisher_identity).
+
+archive_sets_archived_at_test() ->
+    {ok, S1, _} = execute_and_apply(fresh_state(), make_initiate_payload()),
+    {ok, S2, _} = execute_and_apply(S1, make_announce_payload()),
+    {ok, S3, _} = execute_and_apply(S2, make_publish_payload()),
+    {ok, S4, _} = execute_and_apply(S3, make_buy_payload()),
+    {ok, S5, _} = execute_and_apply(S4, make_revoke_payload()),
+    {ok, S6, _} = execute_and_apply(S5, make_archive_payload()),
+    ?assertNotEqual(undefined, S6#license_state.archived_at),
+    ?assert(is_integer(S6#license_state.archived_at)).

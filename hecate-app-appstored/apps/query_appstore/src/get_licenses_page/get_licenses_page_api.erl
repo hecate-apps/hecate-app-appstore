@@ -8,15 +8,15 @@
 
 -define(LICENSE_COLUMNS, [
     license_id, user_id, plugin_id, plugin_name,
-    oci_image, granted_at, revoked_at, archived_at,
-    status, status_label
+    installed, installed_version, oci_image,
+    granted_at, installed_at, upgraded_at, revoked, revoked_at
 ]).
 
 -define(SQL,
     "SELECT license_id, user_id, plugin_id, plugin_name, "
-    "oci_image, granted_at, revoked_at, archived_at, "
-    "status, status_label "
-    "FROM licenses WHERE user_id = ?1 AND (status & 16) = 0").
+    "installed, installed_version, oci_image, "
+    "granted_at, installed_at, upgraded_at, revoked, revoked_at "
+    "FROM licenses WHERE user_id = ?1 AND (status & 32) = 0").
 
 routes() -> [{"/api/appstore/licenses", ?MODULE, []}].
 

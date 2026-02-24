@@ -149,8 +149,8 @@ apply_event(#{<<"event_type">> := <<"license_bought_v1">>} = E, S)   -> apply_bo
 apply_event(#{event_type := <<"license_bought_v1">>} = E, S)         -> apply_bought(E, S);
 apply_event(#{<<"event_type">> := <<"license_revoked_v1">>} = E, S)  -> apply_revoked(E, S);
 apply_event(#{event_type := <<"license_revoked_v1">>} = E, S)       -> apply_revoked(E, S);
-apply_event(#{<<"event_type">> := <<"license_archived_v1">>} = _E, S) -> apply_archived(S);
-apply_event(#{event_type := <<"license_archived_v1">>} = _E, S)     -> apply_archived(S);
+apply_event(#{<<"event_type">> := <<"license_archived_v1">>} = E, S) -> apply_archived(E, S);
+apply_event(#{event_type := <<"license_archived_v1">>} = E, S)     -> apply_archived(E, S);
 %% Unknown — ignore
 apply_event(_E, S) -> S.
 
@@ -167,6 +167,13 @@ apply_initiated(E, State) ->
         oci_image = app_appstored_api_utils:get_field(oci_image, E),
         selling_formula = app_appstored_api_utils:get_field(selling_formula, E),
         seller_id = app_appstored_api_utils:get_field(seller_id, E),
+        org = app_appstored_api_utils:get_field(org, E),
+        version = app_appstored_api_utils:get_field(version, E),
+        manifest_tag = app_appstored_api_utils:get_field(manifest_tag, E),
+        tags = app_appstored_api_utils:get_field(tags, E),
+        homepage = app_appstored_api_utils:get_field(homepage, E),
+        min_daemon_version = app_appstored_api_utils:get_field(min_daemon_version, E),
+        publisher_identity = app_appstored_api_utils:get_field(publisher_identity, E),
         status = evoq_bit_flags:set(0, ?LIC_INITIATED),
         initiated_at = app_appstored_api_utils:get_field(initiated_at, E)
     }.
@@ -199,9 +206,10 @@ apply_revoked(E, #license_state{status = Status} = State) ->
         revoked_at = app_appstored_api_utils:get_field(revoked_at, E)
     }.
 
-apply_archived(#license_state{status = Status} = State) ->
+apply_archived(E, #license_state{status = Status} = State) ->
     State#license_state{
-        status = evoq_bit_flags:set(Status, ?LIC_ARCHIVED)
+        status = evoq_bit_flags:set(Status, ?LIC_ARCHIVED),
+        archived_at = app_appstored_api_utils:get_field(archived_at, E)
     }.
 
 %% --- Internal ---

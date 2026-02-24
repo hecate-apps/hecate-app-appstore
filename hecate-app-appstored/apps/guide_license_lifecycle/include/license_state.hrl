@@ -16,6 +16,13 @@
     github_repo       :: binary() | undefined,
     selling_formula   :: binary() | undefined,
     seller_id         :: binary() | undefined,
+    org               :: binary() | undefined,
+    version           :: binary() | undefined,
+    manifest_tag      :: binary() | undefined,
+    tags              :: binary() | undefined,
+    homepage          :: binary() | undefined,
+    min_daemon_version :: binary() | undefined,
+    publisher_identity :: binary() | undefined,
     initiated_at      :: integer() | undefined,
     announced_at      :: integer() | undefined,
     published_at      :: integer() | undefined

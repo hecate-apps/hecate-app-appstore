@@ -71,5 +71,12 @@ create_event(Cmd) ->
         github_repo => initiate_license_v1:get_github_repo(Cmd),
         oci_image => initiate_license_v1:get_oci_image(Cmd),
         selling_formula => initiate_license_v1:get_selling_formula(Cmd),
-        seller_id => initiate_license_v1:get_seller_id(Cmd)
+        seller_id => initiate_license_v1:get_seller_id(Cmd),
+        org => initiate_license_v1:get_org(Cmd),
+        version => initiate_license_v1:get_version(Cmd),
+        manifest_tag => initiate_license_v1:get_manifest_tag(Cmd),
+        tags => initiate_license_v1:get_tags(Cmd),
+        homepage => initiate_license_v1:get_homepage(Cmd),
+        min_daemon_version => initiate_license_v1:get_min_daemon_version(Cmd),
+        publisher_identity => initiate_license_v1:get_publisher_identity(Cmd)
     }).

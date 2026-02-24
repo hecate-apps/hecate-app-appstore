@@ -6,6 +6,6 @@
 project(Event) ->
     LicenseId = app_appstored_api_utils:get_field(license_id, Event),
     RevokedAt = app_appstored_api_utils:get_field(revoked_at, Event),
-    Sql = "UPDATE licenses SET revoked_at = ?2, "
+    Sql = "UPDATE licenses SET revoked_at = ?2, revoked = 1, "
           "status = status | 16, status_label = 'Revoked' WHERE license_id = ?1",
     project_appstore_store:execute(Sql, [LicenseId, RevokedAt]).

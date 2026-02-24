@@ -8,16 +8,19 @@
 -export([init/2, routes/0]).
 
 -define(CATALOG_COLUMNS, [
-    plugin_id, name, description, icon, github_repo, oci_image,
-    selling_formula, seller_id, published_at, catalog_status,
-    license_id, license_status
+    plugin_id, name, org, version, description, icon,
+    oci_image, manifest_tag, tags, homepage, min_daemon_version,
+    publisher_identity, published_at, cataloged_at, refreshed_at,
+    status, retracted,
+    license_id, installed, installed_version
 ]).
 
 -define(SQL, "SELECT "
-    "c.plugin_id, c.name, c.description, c.icon, "
-    "c.github_repo, c.oci_image, c.selling_formula, c.seller_id, "
-    "c.published_at, c.status, "
-    "l.license_id, l.status "
+    "c.plugin_id, c.name, c.org, c.version, c.description, c.icon, "
+    "c.oci_image, c.manifest_tag, c.tags, c.homepage, c.min_daemon_version, "
+    "c.publisher_identity, c.published_at, c.cataloged_at, c.refreshed_at, "
+    "c.status, c.retracted, "
+    "l.license_id, l.installed, l.installed_version "
     "FROM plugin_catalog c "
     "LEFT JOIN licenses l ON c.plugin_id = l.plugin_id AND l.user_id = ?1 "
     "WHERE (c.status & 4) != 0 "
