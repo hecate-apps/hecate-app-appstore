@@ -12,7 +12,7 @@
 -define(STORE_ID, appstore_store).
 
 start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, []).
+    gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 init([]) ->
     {ok, _} = reckon_evoq_adapter:subscribe(
