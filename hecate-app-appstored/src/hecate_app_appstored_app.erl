@@ -33,7 +33,7 @@ stop(_State) ->
 %%% Internal
 
 ensure_pg_scope() ->
-    case pg:start_link(hecate_app_appstored) of
+    case pg:start(pg) of
         {ok, _Pid} -> ok;
         {error, {already_started, _Pid}} -> ok
     end.

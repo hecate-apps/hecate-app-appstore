@@ -1,12 +1,13 @@
-{application, query_appstore, [
-    {description, "Marketplace query service (read models)"},
+{application, guide_license_lifecycle, [
+    {description, "License lifecycle command service"},
     {vsn, "0.1.0"},
     {registered, []},
-    {mod, {query_appstore_app, []}},
+    {mod, {guide_license_lifecycle_app, []}},
     {applications, [
         kernel,
         stdlib,
-        project_appstore
+        crypto,
+        evoq
     ]},
     {env, []},
     {modules, []},

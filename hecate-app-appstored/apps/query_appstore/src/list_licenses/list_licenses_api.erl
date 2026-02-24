@@ -6,16 +6,17 @@
 
 -export([init/2, routes/0]).
 
--define(USER_ID, <<"rl">>).
-
 -define(LICENSE_COLUMNS, [
-    license_id, user_id, plugin_id, plugin_name, installed,
-    installed_version, oci_image, granted_at, installed_at,
-    upgraded_at, revoked, revoked_at
+    license_id, user_id, plugin_id, plugin_name,
+    oci_image, granted_at, revoked_at, archived_at,
+    status, status_label
 ]).
 
 -define(SQL,
-    "SELECT * FROM licenses WHERE user_id = ?1 AND revoked = 0").
+    "SELECT license_id, user_id, plugin_id, plugin_name, "
+    "oci_image, granted_at, revoked_at, archived_at, "
+    "status, status_label "
+    "FROM licenses WHERE user_id = ?1 AND (status & 16) = 0").
 
 routes() -> [{"/api/appstore/licenses", ?MODULE, []}].
 
@@ -26,12 +27,17 @@ init(Req0, State) ->
     end.
 
 handle_get(Req0, _State) ->
-    case query_appstore_store:query(?SQL, [?USER_ID]) of
-        {ok, Rows} ->
-            Items = [row_to_map(R) || R <- Rows],
-            app_appstored_api_utils:json_ok(#{items => Items}, Req0);
-        {error, Reason} ->
-            app_appstored_api_utils:json_error(500, Reason, Req0)
+    case cowboy_req:header(<<"x-hecate-user-id">>, Req0) of
+        undefined ->
+            app_appstored_api_utils:json_error(401, <<"Missing X-Hecate-User-Id header">>, Req0);
+        UserId ->
+            case project_appstore_store:query(?SQL, [UserId]) of
+                {ok, Rows} ->
+                    Items = [row_to_map(R) || R <- Rows],
+                    app_appstored_api_utils:json_ok(#{items => Items}, Req0);
+                {error, Reason} ->
+                    app_appstored_api_utils:json_error(500, Reason, Req0)
+            end
     end.
 
 row_to_map(Row) when is_tuple(Row) ->

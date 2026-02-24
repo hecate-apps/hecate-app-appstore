@@ -11,7 +11,7 @@
 
 %% Marketplace OTP apps that may contain API handlers.
 -define(MARKETPLACE_APPS, [
-    guide_plugin_lifecycle, query_appstore
+    guide_license_lifecycle, project_appstore, query_appstore
 ]).
 
 %% @doc Cowboy handler init - dispatches to domain route handlers.

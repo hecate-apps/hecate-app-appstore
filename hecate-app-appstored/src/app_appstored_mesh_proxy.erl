@@ -15,7 +15,7 @@
 
 -export([publish/2]).
 
--define(PG_SCOPE, hecate_app_appstored).
+-define(PG_SCOPE, pg).
 -define(PG_GROUP, appstore_mesh_bridge).
 
 %% @doc Publish a message to the Macula mesh via hecate-daemon bridge.

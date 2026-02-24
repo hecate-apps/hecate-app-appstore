@@ -7,25 +7,29 @@
 
 -export([init/2, routes/0]).
 
--define(USER_ID, <<"rl">>).
-
 -define(CATALOG_COLUMNS, [
-    plugin_id, name, org, version, description, icon, oci_image,
-    manifest_tag, tags, homepage, min_daemon_version, publisher_identity,
-    published_at, cataloged_at, refreshed_at, status, retracted
+    plugin_id, license_id, name, description, icon, github_repo,
+    oci_image, selling_formula, seller_id, announced_at,
+    published_at, status, status_label
 ]).
 
 -define(LICENSE_COLUMNS, [
-    license_id, user_id, plugin_id, plugin_name, installed,
-    installed_version, oci_image, granted_at, installed_at,
-    upgraded_at, revoked, revoked_at
+    license_id, user_id, plugin_id, plugin_name,
+    oci_image, granted_at, revoked_at, archived_at,
+    status, status_label
 ]).
 
 -define(CATALOG_SQL,
-    "SELECT * FROM plugin_catalog WHERE plugin_id = ?1").
+    "SELECT plugin_id, license_id, name, description, icon, github_repo, "
+    "oci_image, selling_formula, seller_id, announced_at, "
+    "published_at, status, status_label "
+    "FROM plugin_catalog WHERE plugin_id = ?1").
 
 -define(LICENSE_SQL,
-    "SELECT * FROM licenses WHERE plugin_id = ?1 AND user_id = ?2 AND revoked = 0").
+    "SELECT license_id, user_id, plugin_id, plugin_name, "
+    "oci_image, granted_at, revoked_at, archived_at, "
+    "status, status_label "
+    "FROM licenses WHERE plugin_id = ?1 AND user_id = ?2 AND (status & 16) = 0").
 
 routes() -> [{"/api/appstore/plugin/:id", ?MODULE, []}].
 
@@ -36,21 +40,26 @@ init(Req0, State) ->
     end.
 
 handle_get(Req0, _State) ->
-    PluginId = cowboy_req:binding(id, Req0),
-    case query_appstore_store:query(?CATALOG_SQL, [PluginId]) of
-        {ok, [Row]} ->
-            Plugin = row_to_map(?CATALOG_COLUMNS, Row),
-            License = fetch_license(PluginId),
-            Result = Plugin#{license => License},
-            app_appstored_api_utils:json_ok(#{plugin => Result}, Req0);
-        {ok, []} ->
-            app_appstored_api_utils:not_found(Req0);
-        {error, Reason} ->
-            app_appstored_api_utils:json_error(500, Reason, Req0)
+    case cowboy_req:header(<<"x-hecate-user-id">>, Req0) of
+        undefined ->
+            app_appstored_api_utils:json_error(401, <<"Missing X-Hecate-User-Id header">>, Req0);
+        UserId ->
+            PluginId = cowboy_req:binding(id, Req0),
+            case project_appstore_store:query(?CATALOG_SQL, [PluginId]) of
+                {ok, [Row]} ->
+                    Plugin = row_to_map(?CATALOG_COLUMNS, Row),
+                    License = fetch_license(PluginId, UserId),
+                    Result = Plugin#{license => License},
+                    app_appstored_api_utils:json_ok(#{plugin => Result}, Req0);
+                {ok, []} ->
+                    app_appstored_api_utils:not_found(Req0);
+                {error, Reason} ->
+                    app_appstored_api_utils:json_error(500, Reason, Req0)
+            end
     end.
 
-fetch_license(PluginId) ->
-    case query_appstore_store:query(?LICENSE_SQL, [PluginId, ?USER_ID]) of
+fetch_license(PluginId, UserId) ->
+    case project_appstore_store:query(?LICENSE_SQL, [PluginId, UserId]) of
         {ok, [Row]} -> row_to_map(?LICENSE_COLUMNS, Row);
         {ok, []} -> null;
         {error, _} -> null
